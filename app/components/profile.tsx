@@ -89,11 +89,15 @@ const Profile = () => {
     try {
       let avatar_url = user.avatar_url
 
-      if (avatar) {
-        // supabaseストレージに画像アップロード
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('profile')
-          .upload(`${user.id}/${uuidv4()}`, avatar)
+if (avatar) {
+  // 拡張子を取得（例: ".png"）
+  const ext = avatar.name.split('.').pop()
+  const fileNameWithExt = `${uuidv4()}.${ext}`
+
+  const { data: storageData, error: storageError } = await supabase.storage
+    .from('profile')
+    .upload(`${user.id}/${fileNameWithExt}`, avatar)
+  
 
         // エラーチェック
         if (storageError) {
