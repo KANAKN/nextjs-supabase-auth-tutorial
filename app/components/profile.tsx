@@ -90,35 +90,32 @@ const Profile = () => {
       let avatar_url = user.avatar_url
 
 if (avatar) {
-  // 拡張子を取得（例: ".png"）
+  // 拡張子を取得（例: png）
   const ext = avatar.name.split('.').pop()
   const fileNameWithExt = `${uuidv4()}.${ext}`
 
+  // supabaseストレージに画像アップロード
   const { data: storageData, error: storageError } = await supabase.storage
     .from('profile')
     .upload(`${user.id}/${fileNameWithExt}`, avatar)
-  
 
-        // エラーチェック
-        if (storageError) {
-          setMessage('エラーが発生しました。' + storageError.message)
-          return
-        }
+  if (storageError) {
+    setMessage('エラーが発生しました。' + storageError.message)
+    return
+  }
 
-        if (avatar_url) {
-          const fileName = avatar_url.split('/').slice(-1)[0]
+  if (avatar_url) {
+    const fileName = avatar_url.split('/').slice(-1)[0]
+    await supabase.storage.from('profile').remove([`${user.id}/${fileName}`])
+  }
 
-          // 古い画像を削除
-          await supabase.storage.from('profile').remove([`${user.id}/${fileName}`])
-        }
+  const { data: urlData } = await supabase.storage
+    .from('profile')
+    .getPublicUrl(storageData.path)
 
-        // 画像のURLを取得
-        const { data: urlData } = await supabase.storage
-          .from('profile')
-          .getPublicUrl(storageData.path)
+  avatar_url = urlData.publicUrl
+}
 
-        avatar_url = urlData.publicUrl
-      }
 
       // プロフィールアップデート
       const { error: updateError } = await supabase
