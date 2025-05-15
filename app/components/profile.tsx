@@ -112,6 +112,7 @@ if (avatar) {
   const { data: urlData } = await supabase.storage
     .from('profile')
     .getPublicUrl(storageData.path)
+console.log('Public URL:', urlData.publicUrl)
 
   avatar_url = urlData.publicUrl
 }
